@@ -7,7 +7,7 @@
 # 🛸 PolyXML Polyglot Examples: Anduril Lattice SDK ↔ USAF UCI C2 Bridge
 
 [![CI](https://github.com/polyxml/polyxml-defense-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/polyxml/polyxml-defense-examples/actions/workflows/ci.yml)
-[![PolyXML](https://img.shields.io/badge/PolyXML-v0.31.0-blueviolet.svg?style=flat-square)](https://github.com/polyxml/PolyXML)
+[![PolyXML](https://img.shields.io/badge/PolyXML-v0.32.0-blueviolet.svg?style=flat-square)](https://github.com/polyxml/PolyXML)
 [![Standard: USAF UCI v2.5](https://img.shields.io/badge/Standard-USAF%20UCI%20v2.5-003366.svg?style=flat-square)](https://github.com/open-arsenal/uci)
 [![Source: Anduril Lattice SDK](https://img.shields.io/badge/Source-Anduril%20Lattice%20SDK-black.svg?style=flat-square)](https://buf.build/anduril/lattice-sdk)
 [![Data-Binding: Dual XML & JSON](https://img.shields.io/badge/Data--Binding-XML%20%E2%86%94%20JSON%20Parity-orange.svg?style=flat-square)](#-first-class-dual-format-xml--json-interoperability)
@@ -164,6 +164,14 @@ codecs = true
 features = ["rkyv"]
 
 [[generate]]
+target = "rust"
+output = "rust_chunked"
+split_units = true
+chunk_size = 4
+zero_copy = true
+codecs = true
+
+[[generate]]
 target = "python"
 output = "python"
 backend = "dataclass"
@@ -226,6 +234,30 @@ Generate strongly-typed domain models for any specific language on demand with f
 Run the automated generation script across all 7 targets:
 ```bash
 ./scripts/generate_all.sh
+```
+
+---
+
+### 3. Topological SCC Compilation Unit Chunking (`--split-units`)
+
+When handling massive, deeply-nested enterprise schemas (such as USAF UCI with 5,558 types), single-file compilation units can stress downstream compilers, linters, and IDEs. PolyXML provides **Topological SCC Chunking** as an optional setting:
+- **Mathematical Cycle Resolution**: Discovers mutually recursive type dependencies via Tarjan's Strongly Connected Components algorithm, contracting cycles into atomic super-nodes.
+- **Topological DAG Ordering**: Orders chunks strictly forward-only ($A \leftarrow B \leftarrow C$) so that no chunk ever circularly imports subsequent chunks.
+- **Seamless Downstream Consumption**: The parent `mod.rs` re-exports all chunk types (`pub use chunk_XX::*;`), ensuring that downstream code consumes `mod.rs` with 100% stable, identical API signatures.
+
+Generate bounded topological chunks:
+```bash
+# Generate bounded topological chunks of target size 4
+polyxml generate schemas/uci/uci_entity_core.xsd --lang rust --split-units --chunk-size 4 -o generated/rust_chunked
+```
+
+Downstream Rust usage:
+```rust
+// Verified in examples/rust/tests/test_chunked.rs:
+#[path = "../../../generated/rust_chunked/mod.rs"]
+mod uci_chunked;
+
+use uci_chunked::*; // Seamless access to all types across chunk_00, chunk_01, chunk_02!
 ```
 
 ---

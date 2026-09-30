@@ -19,7 +19,7 @@ use std::borrow::Cow;
 use std::str::FromStr;
 
 #[allow(dead_code)]
-fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
+pub(crate) fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
     let mut depth = 1;
     loop {
         match reader.read_event()? {
@@ -38,7 +38,10 @@ fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
 }
 
 #[allow(dead_code)]
-fn read_element_text<'a>(reader: &mut Reader<&'a [u8]>, tag_name: &str) -> Result<Cow<'a, str>> {
+pub(crate) fn read_element_text<'a>(
+    reader: &mut Reader<&'a [u8]>,
+    tag_name: &str,
+) -> Result<Cow<'a, str>> {
     let mut text = Cow::Borrowed("");
     loop {
         match reader.read_event()? {

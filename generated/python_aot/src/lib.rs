@@ -72,7 +72,7 @@ impl From<serde_json::Error> for PolyXmlError {
 pub type Result<T> = std::result::Result<T, PolyXmlError>;
 
 #[allow(dead_code)]
-fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
+pub(crate) fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
     let mut depth = 1;
     loop {
         match reader.read_event()? {
@@ -91,7 +91,7 @@ fn skip_xml_element(reader: &mut Reader<&[u8]>) -> Result<()> {
 }
 
 #[allow(dead_code)]
-fn read_element_text(reader: &mut Reader<&[u8]>, tag_name: &str) -> Result<String> {
+pub(crate) fn read_element_text(reader: &mut Reader<&[u8]>, tag_name: &str) -> Result<String> {
     let mut text = String::new();
     loop {
         match reader.read_event()? {

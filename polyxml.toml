@@ -12,6 +12,14 @@ codecs = true
 features = ["rkyv"]
 
 [[generate]]
+target = "rust"
+output = "rust_chunked"
+split_units = true
+chunk_size = 4
+zero_copy = true
+codecs = true
+
+[[generate]]
 target = "python"
 output = "python"
 backend = "dataclass"

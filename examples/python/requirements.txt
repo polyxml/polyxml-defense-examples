@@ -1,2 +1,2 @@
-polyxml>=0.31.0
+polyxml>=0.32.0
 
